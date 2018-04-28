@@ -3,6 +3,11 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import VeeValidate from 'vee-validate'
+import UUID from 'vue-uuid'
+
+Vue.use(VeeValidate)
+Vue.use(UUID)
 
 Vue.config.productionTip = false
 

@@ -14,8 +14,11 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "uuid": "^3.2.1",
+    "vee-validate": "^2.0.8",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
+    "vue-uuid": "^1.0.0",
     "vue2-bootstrap-table2": "^1.1.8"
   },
   "devDependencies": {
