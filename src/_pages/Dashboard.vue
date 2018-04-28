@@ -53,6 +53,11 @@
 
     <section class="section">
       <div class="box">
+        <div class="field is-12">
+          <p class="control">
+            <button class="button is-primary modal-button" data-target="modal-ter" aria-haspopup="true"  v-on:click="onMovementModal()">Movement</button>
+          </p>
+        </div>
         <div class="field has-addons is-12">
           <p class="control">
             <input class="input" type="text" placeholder="Search" v-model="searchQuery">
@@ -75,6 +80,49 @@
       </div>
     </section>
 
+    <div :class="{'modal': true, 'is-active':  isComponentModalActive}">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Move groceries between Fridge 1 and Fridge2</p>
+          <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column">
+              <div class="select is-multiple">
+                <select multiple v-model="selectedFridge1">
+                  <option v-for="product in fridgeList1" v-bind:value="product.id" :key="product.id">
+                    {{ product.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="column action">
+              <button class="button is-default" name="button" @click.prevent="onMoveToFride2">
+                Left
+              </button>
+              <button class="button is-default" name="button" @click.prevent="onMoveToFride1">
+                Right
+              </button>
+            </div>
+            <div class="column">
+              <div class="select is-multiple">
+                <select multiple v-model="selectedFridge2">
+                  <option v-for="product in fridgeList2" v-bind:value="product.id" :key="product.id">
+                    {{ product.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" @click.prevent="onApply">Apply</button>
+          <button class="button" v-on:click="isComponentModalActive = false">Cancel</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -86,6 +134,7 @@ export default {
   name: 'Dashboard',
   components: { InnovationGrid },
   data () {
+    // localStorage.setItem('gridData', JSON.stringify([]))
     let gridData = JSON.parse(localStorage.getItem('gridData'))
     if (!gridData) {
       gridData = []
@@ -96,7 +145,12 @@ export default {
       productName: '',
       stock: '',
       gridColumns: ['fridge', 'name', 'stock'],
-      gridData: gridData
+      gridData: gridData,
+      isComponentModalActive: false,
+      fridgeList1: [],
+      fridgeList2: [],
+      selectedFridge1: [],
+      selectedFridge2: []
     }
   },
   methods: {
@@ -138,6 +192,81 @@ export default {
       }
 
       localStorage.setItem('gridData', JSON.stringify(this.gridData))
+    },
+    moveProduct (id, isFrom1To2) {
+      if (isFrom1To2) {
+        let index = -1
+        let product = null
+        for (let i = 0; i < this.fridgeList1.length; i++) {
+          if (this.fridgeList1[i]['id'] === id) {
+            index = i
+            product = this.fridgeList1[i]
+            break
+          }
+        }
+
+        if (index !== -1) {
+          this.fridgeList1.splice(index, 1)
+          this.fridgeList2.push(product)
+        }
+      } else {
+        let index = -1
+        let product = null
+        for (let i = 0; i < this.fridgeList2.length; i++) {
+          if (this.fridgeList2[i]['id'] === id) {
+            index = i
+            product = this.fridgeList2[i]
+            break
+          }
+        }
+
+        if (index !== -1) {
+          this.fridgeList2.splice(index, 1)
+          this.fridgeList1.push(product)
+        }
+      }
+    },
+    onMovementModal () {
+      this.fridgeList1 = []
+      this.fridgeList2 = []
+
+      if (this.gridData && this.gridData.length > 0) {
+        for (let i = 0; i < this.gridData.length; i++) {
+          if (this.gridData[i]['fridge'] === 'Fridge1') {
+            this.fridgeList1.push(this.gridData[i])
+          } else if (this.gridData[i]['fridge'] === 'Fridge2') {
+            this.fridgeList2.push(this.gridData[i])
+          }
+        }
+      }
+      this.isComponentModalActive = true
+    },
+    onMoveToFride2 () {
+      for (let i = 0; i < this.selectedFridge1.length; i++) {
+        this.moveProduct(this.selectedFridge1[i], true)
+      }
+    },
+    onMoveToFride1 () {
+      for (let i = 0; i < this.selectedFridge2.length; i++) {
+        this.moveProduct(this.selectedFridge2[i], false)
+      }
+    },
+    onApply () {
+      this.gridData = []
+      if (this.fridgeList1 && this.fridgeList1.length > 0) {
+        for (let i = 0; i < this.fridgeList1.length; i++) {
+          this.fridgeList1[i]['fridge'] = 'Fridge1'
+        }
+      }
+      if (this.fridgeList2 && this.fridgeList2.length > 0) {
+        for (let i = 0; i < this.fridgeList2.length; i++) {
+          this.fridgeList2[i]['fridge'] = 'Fridge2'
+        }
+      }
+      this.gridData.push(...this.fridgeList1)
+      this.gridData.push(...this.fridgeList2)
+      localStorage.setItem('gridData', JSON.stringify(this.gridData))
+      this.isComponentModalActive = false
     }
   }
 }
@@ -155,5 +284,10 @@ export default {
 
   table {
     width: 100%;
+  }
+
+  .action {
+    display: flex;
+    flex-flow: column;
   }
 </style>
