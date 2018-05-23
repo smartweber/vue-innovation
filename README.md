@@ -1,4 +1,5 @@
-# innovation
+# Innovation
+Groceries management app
 
 > Innovation
 
